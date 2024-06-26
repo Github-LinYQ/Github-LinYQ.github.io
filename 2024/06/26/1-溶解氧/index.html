@@ -533,11 +533,87 @@ window.msRequestAnimationFrame ||
         </header>
 
         <div class="post-content">
-            <h1 id="一、溶解氧的含义与表示"><a href="#一、溶解氧的含义与表示" class="headerlink" title="一、溶解氧的含义与表示"></a>一、溶解氧的含义与表示</h1><hr>
+            <hr>
+<h1 id="一、溶解氧的含义与表示"><a href="#一、溶解氧的含义与表示" class="headerlink" title="一、溶解氧的含义与表示"></a>一、溶解氧的含义与表示</h1><hr>
 <p>溶解氧是表征水溶液中氧浓度的参数，是溶解在水中的游离氧。溶解氧的含量以每升水中的氧毫克数表示，通常记作DO，单位是mg&#x2F;L，是衡量水体自净能力的一个指标。</p>
 <hr>
 <h1 id="二、溶解氧的意义与数据来源"><a href="#二、溶解氧的意义与数据来源" class="headerlink" title="二、溶解氧的意义与数据来源"></a>二、溶解氧的意义与数据来源</h1><hr>
-<p>目前溶解氧已纳入地表水环境质量标准，属于水质监测指标之一，其浓度高低直接反映水体黑臭情况，溶解氧指标评价标准见[《地表水环境质量标准》]([地表水环境质量标准_中华人民共和国生态环境部 (mee.gov.cn)](<a target="_blank" rel="noopener" href="https://www.mee.gov.cn/ywgz/fgbz/bz/bzwb/shjbh/shjzlbz/200206/t20020601_66497.shtml#:~:text=%E6%9C%AC%E6%A0%87%E5%87%86%E6%8C%89%E7%85%A7%E5%9C%B0%E8%A1%A8%E6%B0%B4%E7%8E%AF%E5%A2%83%E5%8A%9F%E8%83%BD%E5%88%86%E7%B1%BB%E5%92%8C%E4%BF%9D%E6%8A%A4%E7%9B%AE%E6%A0%87%EF%BC%8C%E8%A7%84%E5%AE%9A%E4%BA%86%E6%B0%B4%E7%8E%AF%E5%A2%83%E8%B4%A8%E9%87%8F%E5%BA%94%E6%8E%A7%E5%88%B6%E7%9A%84%E9%A1%B9%E7%9B%AE%E5%8F%8A%E9%99%90%E5%80%BC%EF%BC%8C%E4%BB%A5%E5%8F%8A%E6%B0%B4%E8%B4%A8%E8%AF%84%E4%BB%B7%E3%80%81%E6%B0%B4%E8%B4%A8%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95%E5%92%8C%E6%A0%87%E5%87%86%E7%9A%84%E5%AE%9E%E6%96%BD%E4%B8%8E%E7%9B%91%E7%9D%A3%E3%80%82">https://www.mee.gov.cn/ywgz/fgbz/bz/bzwb/shjbh/shjzlbz/200206/t20020601_66497.shtml#:~:text=本标准按照地表水环境功能分类和保护目标，规定了水环境质量应控制的项目及限值，以及水质评价、水质项目的分析方法和标准的实施与监督。</a> 本标准适用于中华人民共和国领域内江河、湖泊、运河、渠道、水库等具有使用功能的地表水水域。 具有特定功能的水域，应执行相应的专业用水水质标准。,地表水环境质量标准（GB 3838-2002 ）))，的</p>
+<p>目前溶解氧已纳入地表水环境质量标准，属于水质监测指标之一，其浓度高低直接反映水体黑臭情况，溶解氧指标评价标准见[《地表水环境质量标准》]([地表水环境质量标准_中华人民共和国生态环境部 (mee.gov.cn)](<a target="_blank" rel="noopener" href="https://www.mee.gov.cn/ywgz/fgbz/bz/bzwb/shjbh/shjzlbz/200206/t20020601_66497.shtml#:~:text=%E6%9C%AC%E6%A0%87%E5%87%86%E6%8C%89%E7%85%A7%E5%9C%B0%E8%A1%A8%E6%B0%B4%E7%8E%AF%E5%A2%83%E5%8A%9F%E8%83%BD%E5%88%86%E7%B1%BB%E5%92%8C%E4%BF%9D%E6%8A%A4%E7%9B%AE%E6%A0%87%EF%BC%8C%E8%A7%84%E5%AE%9A%E4%BA%86%E6%B0%B4%E7%8E%AF%E5%A2%83%E8%B4%A8%E9%87%8F%E5%BA%94%E6%8E%A7%E5%88%B6%E7%9A%84%E9%A1%B9%E7%9B%AE%E5%8F%8A%E9%99%90%E5%80%BC%EF%BC%8C%E4%BB%A5%E5%8F%8A%E6%B0%B4%E8%B4%A8%E8%AF%84%E4%BB%B7%E3%80%81%E6%B0%B4%E8%B4%A8%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95%E5%92%8C%E6%A0%87%E5%87%86%E7%9A%84%E5%AE%9E%E6%96%BD%E4%B8%8E%E7%9B%91%E7%9D%A3%E3%80%82">https://www.mee.gov.cn/ywgz/fgbz/bz/bzwb/shjbh/shjzlbz/200206/t20020601_66497.shtml#:~:text=本标准按照地表水环境功能分类和保护目标，规定了水环境质量应控制的项目及限值，以及水质评价、水质项目的分析方法和标准的实施与监督。</a> 本标准适用于中华人民共和国领域内江河、湖泊、运河、渠道、水库等具有使用功能的地表水水域。 具有特定功能的水域，应执行相应的专业用水水质标准。,地表水环境质量标准（GB 3838-2002 ）))，为体现黑臭水体治理效果，目前在已有的评价标准下也新增了劣Ⅴ类水的概念。</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th align="center">水质指标</th>
+<th align="center"></th>
+<th align="center">Ⅰ类</th>
+<th align="center">Ⅱ类</th>
+<th align="center">Ⅲ类</th>
+<th align="center">Ⅳ类</th>
+<th align="center">Ⅴ类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">溶解氧</td>
+<td align="center">≥</td>
+<td align="center">7.5</td>
+<td align="center">6</td>
+<td align="center">5</td>
+<td align="center">3</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">高锰酸盐指数</td>
+<td align="center">≤</td>
+<td align="center">2</td>
+<td align="center">4</td>
+<td align="center">6</td>
+<td align="center">10</td>
+<td align="center">15</td>
+</tr>
+<tr>
+<td align="center">氨氮</td>
+<td align="center">≤</td>
+<td align="center">0.15</td>
+<td align="center">0.5</td>
+<td align="center">1.0</td>
+<td align="center">1.5</td>
+<td align="center">2.0</td>
+</tr>
+<tr>
+<td align="center">总磷</td>
+<td align="center">≤</td>
+<td align="center">0.02</td>
+<td align="center">0.1</td>
+<td align="center">0.2</td>
+<td align="center">0.3</td>
+<td align="center">0.4</td>
+</tr>
+<tr>
+<td align="center">总氮</td>
+<td align="center">≤</td>
+<td align="center">0.2</td>
+<td align="center">0.5</td>
+<td align="center">1.0</td>
+<td align="center">1.5</td>
+<td align="center">2.0</td>
+</tr>
+</tbody></table>
+<hr>
+<p>近年来，广东省各级党委、政府和有关部门高度重视，认真贯彻落实党中央、国务院决策部署，全面落实《水十条》和《南粤水更清行动计划》各项任务，2021年以来，全省“十四五”地表水国考断面由71个增加至149个，且国考断面数据公开透明，数据频率4小时一次实时滚动，数据源自<a target="_blank" rel="noopener" href="https://szzdjc.cnemc.cn:8070/GJZ/Business/Publish/Main.html">中国环境监测总站</a>。</p>
+<hr>
+<iframe  
+ height=850 
+ width=90% 
+ src="https://szzdjc.cnemc.cn:8070/GJZ/Business/Publish/Main.html"  
+ frameborder=0  
+ allowfullscreen>
+ </iframe>
+
+<hr>
+<h1 id="三、目前现状"><a href="#三、目前现状" class="headerlink" title="三、目前现状"></a>三、目前现状</h1><hr>
+<p>过去以牺牲环境求发展的老路随着国力强盛逐渐退出历史舞台，各级党委的重视与硬性要求使广东省内国考断面水质逐渐好转，目前全省地表水水质总体保持稳定，主要江河干流水质保持优良，部分重点整治河流水质有所改善。但是，在污染治理力度持续加大的背景下，部分感潮河网区部分断面仍频繁出现低氧现象，其长期的季节性低氧可能更多的是由自然因素主导。</p>
+<hr>
+<p>广东省内以珠江流域为主，珠江流域包括西江、北江、东江三大干流，东江流经广州、东莞两大万亿级城市，水体负荷较大，水质达标情况较不理想，北江多洪涝，其流经的韶关市、清远市经常为新闻播报洪涝的重灾区（如英德），西江相较于前两条干流较为</p>
 
         </div>
 
