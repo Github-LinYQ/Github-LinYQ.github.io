@@ -1169,7 +1169,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #ff1b59;
+  background: #a25081;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2242,6 +2242,13 @@ ul.breadcrumb li + li:last-child {
   color: #ccc;
   margin: auto;
 }
+mjx-container[jax="CHTML"][display="true"],
+.has-jax {
+  overflow: auto hidden;
+}
+mjx-container + br {
+  display: none;
+}
 @media (max-width: 767px) {
   .header-inner,
   .main-inner,
@@ -2393,29 +2400,7 @@ embed {
 body {
   background: url("/images/background.jpg");
   background-repeat: no-repeat;
+  background-size: cover;
   background-attachment: fixed;
   background-position: 100% 100%;
-}
-.post-like {
-  margin-top: 20px; /* 调整按钮的上方间距 */
-  text-align: center; /* 使内容居中对齐 */
-}
-.like-button {
-  display: inline-block;
-  padding: 10px 20px; /* 增加按钮的内边距 */
-  border: 2px solid #ccc; /* 设置边框 */
-  border-radius: 5px; /* 方框的圆角，可以调整 */
-  cursor: pointer; /* 鼠标悬停时变成手型 */
-  transition: background-color 0.3s, border-color 0.3s; /* 添加过渡效果 */
-}
-.like-button:hover {
-  background-color: #f2f2f2; /* 鼠标悬停时的背景颜色 */
-  border-color: #666; /* 鼠标悬停时的边框颜色 */
-}
-.like-button i {
-  margin-right: 8px; /* 调整图标和文字之间的间距 */
-}
-.post-like-count {
-  font-weight: bold; /* 加粗点赞数 */
-  margin-left: 5px; /* 调整文字和图标的间距 */
 }
