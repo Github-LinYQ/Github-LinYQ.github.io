@@ -31,9 +31,11 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E7%BB%88%E7%AB%AF.jpg">
 <meta property="og:image" content="http://example.com/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E5%BA%94%E7%94%A8.jpg">
+<meta property="og:image" content="http://example.com/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/jupyter_notebook.jpg">
+<meta property="og:image" content="http://example.com/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E5%88%9B%E5%BB%BAjupyter.jpg">
 <meta property="og:image" content="http://example.com/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E6%94%B6%E8%B4%B9%E6%A0%87%E5%87%86.jpg">
 <meta property="article:published_time" content="2024-09-28T06:06:38.000Z">
-<meta property="article:modified_time" content="2024-09-28T07:01:12.950Z">
+<meta property="article:modified_time" content="2024-09-28T07:12:47.093Z">
 <meta property="article:author" content="Link_yq">
 <meta property="article:tag" content="机器学习">
 <meta property="article:tag" content="深度学习">
@@ -227,7 +229,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-09-28 14:06:38 / 修改时间：15:01:12" itemprop="dateCreated datePublished" datetime="2024-09-28T14:06:38+08:00">2024-09-28</time>
+              <time title="创建时间：2024-09-28 14:06:38 / 修改时间：15:12:47" itemprop="dateCreated datePublished" datetime="2024-09-28T14:06:38+08:00">2024-09-28</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -266,20 +268,22 @@
 
       
         <h2 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h2><p>详见<a target="_blank" rel="noopener" href="https://hpc.scut.edu.cn/main.htm"><strong>SCUT科学计算公共服务平台</strong></a>，使用超算平台需有SCUT账号（一般为老师申请）</p>
-<p>大部分教程可查阅<a target="_blank" rel="noopener" href="https://hpc.scut.edu.cn/docs/guide.html"><strong>科学计算公共服务平台用户手册</strong></a>，本章仅讲超算登录流程与使用示例</p>
+<p>大部分教程可查阅<a target="_blank" rel="noopener" href="https://hpc.scut.edu.cn/docs/guide.html"><strong>科学计算公共服务平台用户手册</strong></a>，本章仅讲超算使用示例</p>
 <p>遇到技术问题可咨询答疑群263814144（华工算力服务），仅限本校师生</p>
 <h2 id="新建环境"><a href="#新建环境" class="headerlink" title="新建环境"></a>新建环境</h2><p>登录平台与上传文件等操作自行查阅<a target="_blank" rel="noopener" href="https://hpc.scut.edu.cn/docs/guide.html">用户手册</a>（本章上传文件采用WinSCP），根据<a target="_blank" rel="noopener" href="https://hpc.scut.edu.cn/36560/list.htm">软件资源</a>选择合适的集群（本章采用python3.9+torch2.3.0+cuda11.8+cuDNN8.0，故采用集群1）</p>
 <p>点击shell-hpckapok1-任意节点，打开终端</p>
 <p><img src="/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E7%BB%88%E7%AB%AF.jpg"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#导入anaconda，后可运行conda指令</span><br><span class="line">module load anaconda</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#导入anaconda，后可在终端运行conda指令</span><br><span class="line">module load anaconda</span><br></pre></td></tr></table></figure>
 
-<p>后可依照conda流程新建环境，若环境需安装特定whl，可用WinSCP将whl上传至对应的集群文件管理后安装，路径为&#x2F;share&#x2F;home&#x2F;用户名&#x2F;whl路径</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#新建环境</span><br><span class="line">conda create -n env-name python=3.9</span><br><span class="line">#激活环境</span><br><span class="line">source activate env-name</span><br><span class="line">#安装对应pytorch包</span><br><span class="line">conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia</span><br><span class="line">#安装特定whl(先上传至集群)</span><br><span class="line">pip install /share/home/用户名/whl路径/whl文件.whl</span><br><span class="line">#查找环境位置</span><br><span class="line">conda env list</span><br></pre></td></tr></table></figure>
+<p>依照conda流程新建环境，若环境需安装特定whl，可用WinSCP将whl上传至对应的集群文件管理后安装，路径为&#x2F;share&#x2F;home&#x2F;用户名&#x2F;whl路径</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#新建环境</span><br><span class="line">conda create -n env-name python=3.9</span><br><span class="line">#激活环境</span><br><span class="line">source activate env-name</span><br><span class="line">#安装对应pytorch包，查找地址https://pytorch.org/get-started/previous-versions/</span><br><span class="line">conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia</span><br><span class="line">#安装特定whl(先上传至集群)</span><br><span class="line">pip install /share/home/用户名/whl路径/whl文件.whl</span><br><span class="line">#查找环境位置</span><br><span class="line">conda env list</span><br></pre></td></tr></table></figure>
 
 <h2 id="创建应用-jupyter"><a href="#创建应用-jupyter" class="headerlink" title="创建应用(jupyter)"></a>创建应用(jupyter)</h2><p>点击交互式应用-hpckapok1-创建应用，选择所需应用（本章采用jupyter notebook）</p>
 <p><img src="/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E5%BA%94%E7%94%A8.jpg"></p>
-<p>![](&#x2F;images&#x2F;SCUT超算平台使用示例&#x2F;jupyter notebook.jpg)</p>
+<p><img src="/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/jupyter_notebook.jpg"></p>
 <p>根据GPU加速与并行计算选择分区与节点数等，conda环境需设置为绝对路径：&#x2F;share&#x2F;home&#x2F;用户名&#x2F;your&#x2F;conda&#x2F;path</p>
+<p><img src="/images/SCUT%E8%B6%85%E7%AE%97%E5%B9%B3%E5%8F%B0%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/%E5%88%9B%E5%BB%BAjupyter.jpg"></p>
+<p>提交，等一会儿，点击连接</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#GPU加速测试</span></span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="built_in">print</span>(torch.__version__)</span><br><span class="line"><span class="built_in">print</span>(torch.version.cuda)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;gpu&quot;</span>, torch.cuda.is_available())</span><br></pre></td></tr></table></figure>
 
 <h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><p>单卡A800计算性能相较于3080提高50%左右，同时由于可多卡计算，效率提高较为显著</p>
