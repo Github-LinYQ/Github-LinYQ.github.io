@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"enable":true,"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="通过jupyter将nwk 11,xns 11等文件中地形点提取转换为xyz类型数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIKE 11地形数据转化为原始文件(by jupyter)">
+<meta property="og:url" content="http://example.com/2024/12/28/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/index.html">
+<meta property="og:site_name" content="英招">
+<meta property="og:description" content="通过jupyter将nwk 11,xns 11等文件中地形点提取转换为xyz类型数据">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/points%E5%AF%BC%E5%87%BA.jpg">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/shp%E5%AF%BC%E5%87%BA.jpg">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/%E6%96%AD%E9%9D%A2%E7%82%B9txt%E5%AF%BC%E5%87%BA.jpg">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/sort.png">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/line.png">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/%E6%96%AD%E9%9D%A2txt.png">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/arrow.png">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/new_line.png">
+<meta property="og:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/output_map.png">
+<meta property="article:published_time" content="2024-12-28T07:55:07.000Z">
+<meta property="article:modified_time" content="2024-12-28T08:39:05.895Z">
+<meta property="article:author" content="Link_yq">
+<meta property="article:tag" content="教程">
+<meta property="article:tag" content="机理模型">
+<meta property="article:tag" content="MIKE">
+<meta property="article:tag" content="数据处理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/points%E5%AF%BC%E5%87%BA.jpg">
+
+<link rel="canonical" href="http://example.com/2024/12/28/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MIKE 11地形数据转化为原始文件(by jupyter) | 英招</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">英招</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">牢骚太盛防肠断，风物长宜放眼量</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/12/28/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Link_yq">
+      <meta itemprop="description" content="SCUT在读研究生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="英招">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MIKE 11地形数据转化为原始文件(by jupyter)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-12-28 15:55:07 / 修改时间：16:39:05" itemprop="dateCreated datePublished" datetime="2024-12-28T15:55:07+08:00">2024-12-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/" itemprop="url" rel="index"><span itemprop="name">数据处理</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2024/12/28/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/12/28/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description"><center>通过jupyter将nwk 11,xns 11等文件中地形点提取转换为xyz类型数据</center></div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>MIKE 11数据无法直接导出xyz文件，本文进行数据提取方便其他水动力模型使用</p>
+<h2 id="shp与地形txt文件输出"><a href="#shp与地形txt文件输出" class="headerlink" title="shp与地形txt文件输出"></a>shp与地形txt文件输出</h2><p>在nwk文件选中所有断面后复制粘贴到excel中，筛选出目标干流断面点保存（本文保存为points.txt）</p>
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/points%E5%AF%BC%E5%87%BA.jpg"></p>
+<p>在nwk文件中导出一维河道文件为shp格式，在ArcGIS中筛选导出目标河流shp（后续操作仅支持单个线要素，本文保存为line.shp）</p>
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/shp%E5%AF%BC%E5%87%BA.jpg"></p>
+<p>在xns文件中选中所需断面，导出原始文件（本文保存为terrain.txt）</p>
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/%E6%96%AD%E9%9D%A2%E7%82%B9txt%E5%AF%BC%E5%87%BA.jpg"></p>
+<h2 id="数据提取与预处理"><a href="#数据提取与预处理" class="headerlink" title="数据提取与预处理"></a>数据提取与预处理</h2><p>导入所需包</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> geopandas <span class="keyword">as</span> gpd</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> shapely.geometry <span class="keyword">import</span> Point, LineString</span><br><span class="line"><span class="keyword">from</span> shapely.ops <span class="keyword">import</span> nearest_points</span><br></pre></td></tr></table></figure>
+
+<p>加载数据并查看</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 加载Shapefile文件</span></span><br><span class="line">shapefile_path = <span class="string">&quot;line.shp&quot;</span>  <span class="comment"># 替换为实际路径</span></span><br><span class="line">gdf = gpd.read_file(shapefile_path)</span><br><span class="line"><span class="comment"># 假设 Shapefile 的投影坐标系是 EPSG:32650 (UTM区50N)，需要根据实际情况修改</span></span><br><span class="line">gdf = gdf.to_crs(epsg=<span class="number">32650</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 读取TXT数据并生成点要素</span></span><br><span class="line">txt_path = <span class="string">&quot;points.txt&quot;</span>  <span class="comment"># 替换为实际路径</span></span><br><span class="line">df = pd.read_csv(txt_path,sep = <span class="string">&#x27;\t&#x27;</span>)  </span><br><span class="line"></span><br><span class="line"><span class="comment"># 假设线只有一个要素，获取该线</span></span><br><span class="line">line = gdf.geometry.iloc[<span class="number">0</span>]  <span class="comment"># 确保是单条线</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 确保线按照起点到终点方向排序</span></span><br><span class="line">line_coords = <span class="built_in">list</span>(line.coords)</span><br><span class="line">line = LineString(line_coords)  <span class="comment"># 确保线是正确方向</span></span><br></pre></td></tr></table></figure>
+
+<p>断面点根据线要素方向排序（此处线要素X <del>起点</del>＞X <del>终点</del>）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 读取点数据</span></span><br><span class="line">geometry = [Point(xy) <span class="keyword">for</span> xy <span class="keyword">in</span> <span class="built_in">zip</span>(df[<span class="string">&#x27;X&#x27;</span>], df[<span class="string">&#x27;Y&#x27;</span>])]</span><br><span class="line">points_gdf = gpd.GeoDataFrame(df, geometry=geometry)</span><br><span class="line">points_gdf.crs = <span class="string">&quot;EPSG:32650&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算最近点和投影距离</span></span><br><span class="line">projection_data = []</span><br><span class="line"><span class="keyword">for</span> point <span class="keyword">in</span> points_gdf.geometry:</span><br><span class="line">    <span class="comment"># 找到最近点</span></span><br><span class="line">    nearest_point = nearest_points(point, line)[<span class="number">1</span>]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算沿线的投影距离</span></span><br><span class="line">    proj_dist = line.project(nearest_point)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 保存最近点和投影距离</span></span><br><span class="line">    projection_data.append(&#123;</span><br><span class="line">        <span class="string">&quot;nearest_point&quot;</span>: nearest_point,</span><br><span class="line">        <span class="string">&quot;proj_dist&quot;</span>: proj_dist</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转为DataFrame并排序</span></span><br><span class="line">projection_df = pd.DataFrame(projection_data)</span><br><span class="line">projection_df = projection_df.sort_values(by=<span class="string">&quot;proj_dist&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取排序后的最近点列表</span></span><br><span class="line">sorted_nearest_points = projection_df[<span class="string">&quot;nearest_point&quot;</span>].tolist()</span><br></pre></td></tr></table></figure>
+
+<p>绘制断面点以及排序结果，查看是否有错漏</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 4. 绘制结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始线要素</span></span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, label=<span class="string">&#x27;Line&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始点</span></span><br><span class="line">points_gdf.plot(ax=ax, color=<span class="string">&#x27;red&#x27;</span>, markersize=<span class="number">10</span>, label=<span class="string">&#x27;Original Points&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制按顺序排列的最近点</span></span><br><span class="line"><span class="keyword">for</span> i, nearest_point <span class="keyword">in</span> <span class="built_in">enumerate</span>(sorted_nearest_points):</span><br><span class="line">    ax.plot(nearest_point.x, nearest_point.y, <span class="string">&#x27;go&#x27;</span>)  <span class="comment"># 绿色表示排序后的最近点</span></span><br><span class="line">    ax.text(nearest_point.x, nearest_point.y, <span class="built_in">str</span>(i+<span class="number">1</span>), fontsize=<span class="number">8</span>, color=<span class="string">&quot;green&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加图例和标题</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Nearest Points Sorted Along Line&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;Easting (m)&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Northing (m)&quot;</span>)</span><br><span class="line"><span class="comment"># 保存为高分辨率图片</span></span><br><span class="line">current_width, current_height = fig.get_size_inches()  <span class="comment"># 获取当前大小</span></span><br><span class="line">fig.set_size_inches(current_width * <span class="number">3</span>, current_height * <span class="number">3</span>)  <span class="comment"># 设置新大小</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># output_path = &quot;output_map.png&quot;  # 替换为实际保存路径</span></span><br><span class="line"><span class="comment"># plt.savefig(output_path, dpi=300, bbox_inches=&#x27;tight&#x27;)  # dpi=300 高分辨率</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/sort.png"></p>
+<p>生成垂直线段</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成垂直线段</span></span><br><span class="line">vertical_lines = []</span><br><span class="line">line_length = <span class="number">1000</span>  <span class="comment"># 垂直线段总长度</span></span><br><span class="line">line = gdf.geometry.union_all()  <span class="comment"># 合并成一个线要素</span></span><br><span class="line"><span class="keyword">for</span> point <span class="keyword">in</span> points_gdf.geometry:</span><br><span class="line">    <span class="comment"># 找到最近点</span></span><br><span class="line">    nearest_point = nearest_points(point, line)[<span class="number">1</span>]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算法向量方向</span></span><br><span class="line">    segment = line.interpolate(line.project(nearest_point))</span><br><span class="line">    dx = point.x - nearest_point.x</span><br><span class="line">    dy = point.y - nearest_point.y</span><br><span class="line">    norm = (dx ** <span class="number">2</span> + dy ** <span class="number">2</span>) ** <span class="number">0.5</span></span><br><span class="line">    <span class="keyword">if</span> norm == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">continue</span>  <span class="comment"># 避免法向量为零</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 归一化法向量</span></span><br><span class="line">    dx /= norm</span><br><span class="line">    dy /= norm</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建垂直线段</span></span><br><span class="line">    line_start = Point(nearest_point.x - dx * line_length / <span class="number">2</span>, nearest_point.y - dy * line_length / <span class="number">2</span>)</span><br><span class="line">    line_end = Point(nearest_point.x + dx * line_length / <span class="number">2</span>, nearest_point.y + dy * line_length / <span class="number">2</span>)</span><br><span class="line">    vertical_lines.append(LineString([line_start, line_end]))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转为GeoDataFrame</span></span><br><span class="line">vertical_lines_gdf = gpd.GeoDataFrame(geometry=vertical_lines, crs=<span class="string">&quot;EPSG:32650&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始线要素</span></span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, label=<span class="string">&#x27;Line&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始点</span></span><br><span class="line">points_gdf.plot(ax=ax, color=<span class="string">&#x27;red&#x27;</span>, markersize=<span class="number">10</span>, label=<span class="string">&#x27;Points&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制垂直线段</span></span><br><span class="line">vertical_lines_gdf.plot(ax=ax, color=<span class="string">&#x27;green&#x27;</span>, label=<span class="string">&#x27;Vertical Lines&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为垂直线段标注序号</span></span><br><span class="line"><span class="keyword">for</span> idx, line <span class="keyword">in</span> <span class="built_in">enumerate</span>(vertical_lines_gdf.geometry):</span><br><span class="line">    <span class="comment"># 获取线段的中点</span></span><br><span class="line">    mid_point = line.interpolate(<span class="number">0.5</span>, normalized=<span class="literal">True</span>)</span><br><span class="line">    ax.text(mid_point.x, mid_point.y, <span class="built_in">str</span>(idx + <span class="number">1</span>), fontsize=<span class="number">8</span>, color=<span class="string">&quot;black&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加图例和标题</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Vertical Lines from Points to Line&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;Easting (m)&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Northing (m)&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存为高分辨率图片</span></span><br><span class="line">current_width, current_height = fig.get_size_inches()  <span class="comment"># 获取当前大小</span></span><br><span class="line">fig.set_size_inches(current_width * <span class="number">3</span>, current_height * <span class="number">3</span>)  <span class="comment"># 设置新大小</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># output_path = &quot;output_map.png&quot;  # 替换为实际保存路径</span></span><br><span class="line"><span class="comment"># plt.savefig(output_path, dpi=300, bbox_inches=&#x27;tight&#x27;)  # dpi=300 高分辨率</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/line.png"></p>
+<h2 id="断面点txt数据提取与垂线更新"><a href="#断面点txt数据提取与垂线更新" class="headerlink" title="断面点txt数据提取与垂线更新"></a>断面点txt数据提取与垂线更新</h2><p>从xns提取出的txt数据含无关数据，在此对原始数据terrain.txt进行提取</p>
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/%E6%96%AD%E9%9D%A2txt.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 读取文件内容</span></span><br><span class="line">file_path = <span class="string">&#x27;terrain.txt&#x27;</span>  <span class="comment"># 替换为你的文件路径</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(file_path, <span class="string">&#x27;r&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> file:</span><br><span class="line">    content = file.read()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分割表格内容</span></span><br><span class="line">tables = content.split(<span class="string">&#x27;*******************************&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化存储提取结果的列表</span></span><br><span class="line"></span><br><span class="line">all_blocks_data = []</span><br><span class="line"><span class="comment"># 正则表达式定义</span></span><br><span class="line">header_pattern = <span class="string">r&#x27;DJMAINSTREAM\s+([\d.]+)&#x27;</span>  <span class="comment"># 提取开头内容，如 DJMAINSTREAM 1121.230</span></span><br><span class="line">profile_pattern = <span class="string">r&#x27;PROFILE\s+\d+\n([\s\S]*?)(?:LEVEL PARAMS|$)&#x27;</span>  <span class="comment"># 提取PROFILE相关数据</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历每个表格进行处理</span></span><br><span class="line"><span class="keyword">for</span> table <span class="keyword">in</span> tables:</span><br><span class="line">    data = []</span><br><span class="line">    <span class="comment"># 提取表格的头部</span></span><br><span class="line">    header_match = re.search(header_pattern, table)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> header_match:</span><br><span class="line">        <span class="keyword">continue</span>  <span class="comment"># 跳过没有匹配到头部的表格</span></span><br><span class="line">    header_value = header_match.group(<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 提取 PROFILE 数据块</span></span><br><span class="line">    profile_match = re.search(profile_pattern, table)</span><br><span class="line">    <span class="keyword">if</span> profile_match:</span><br><span class="line">        profile_data = profile_match.group(<span class="number">1</span>).strip()</span><br><span class="line">        <span class="comment"># 逐行解析 PROFILE 数据</span></span><br><span class="line">        rows = profile_data.split(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">for</span> row <span class="keyword">in</span> rows:</span><br><span class="line">            row_values = re.split(<span class="string">r&#x27;\s+&#x27;</span>, row.strip())  <span class="comment"># 按空格分割字段</span></span><br><span class="line">            <span class="comment"># 添加到结果列表，附加 Header 信息</span></span><br><span class="line">            data.append(row_values)</span><br><span class="line">            columns = [ <span class="string">&#x27;Col1&#x27;</span>, <span class="string">&#x27;Col2&#x27;</span>, <span class="string">&#x27;Col3&#x27;</span>, <span class="string">&#x27;Col4&#x27;</span>, <span class="string">&#x27;Col5&#x27;</span>, <span class="string">&#x27;Col6&#x27;</span>, <span class="string">&#x27;Col7&#x27;</span>]</span><br><span class="line">            df = pd.DataFrame(data, columns=columns)</span><br><span class="line">    all_blocks_data.append(df)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将提取的数据转化为DataFrame</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出DataFrame查看</span></span><br><span class="line"><span class="built_in">print</span>(all_blocks_data)</span><br><span class="line"></span><br><span class="line"><span class="comment">#第17个点没数据，这里插入后续删除</span></span><br><span class="line">all_blocks_data.insert(<span class="number">17</span>, all_blocks_data[<span class="number">16</span>].copy())</span><br></pre></td></tr></table></figure>
+
+<p>查看数据情况</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">data=pd.DataFrame(all_blocks_data[<span class="number">13</span>])</span><br><span class="line"><span class="built_in">print</span>(data.iloc[:,<span class="number">0</span>:<span class="number">3</span>])</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">min</span>(data.iloc[:,<span class="number">1</span>]))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">len</span>(all_blocks_data))</span><br></pre></td></tr></table></figure>
+
+<p>绘制垂线，确保垂线方向从河流左侧指向河流右侧</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> shapely.geometry <span class="keyword">import</span> LineString, Point</span><br><span class="line"><span class="keyword">import</span> geopandas <span class="keyword">as</span> gpd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算并绘制垂直线段</span></span><br><span class="line">vertical_lines = []</span><br><span class="line">vertical_line_length = <span class="number">1000</span>  <span class="comment"># 垂直线段总长度</span></span><br><span class="line"><span class="keyword">for</span> i, point <span class="keyword">in</span> <span class="built_in">enumerate</span>(sorted_nearest_points):</span><br><span class="line">    <span class="comment"># 处理首尾点的情况</span></span><br><span class="line">    <span class="keyword">if</span> i == <span class="number">0</span>:  <span class="comment"># 起点</span></span><br><span class="line">        next_point = sorted_nearest_points[i + <span class="number">1</span>]</span><br><span class="line">        direction_vector = np.array([next_point.x - point.x, next_point.y - point.y])</span><br><span class="line">    <span class="keyword">elif</span> i == <span class="built_in">len</span>(sorted_nearest_points) - <span class="number">1</span>:  <span class="comment"># 终点</span></span><br><span class="line">        prev_point = sorted_nearest_points[i - <span class="number">1</span>]</span><br><span class="line">        direction_vector = np.array([point.x - prev_point.x, point.y - prev_point.y])</span><br><span class="line">    <span class="keyword">else</span>:  <span class="comment"># 中间点</span></span><br><span class="line">        prev_point = sorted_nearest_points[i - <span class="number">1</span>]</span><br><span class="line">        next_point = sorted_nearest_points[i + <span class="number">1</span>]</span><br><span class="line">        direction_vector = np.array([next_point.x - prev_point.x, next_point.y - prev_point.y])</span><br><span class="line">    norm = np.linalg.norm(direction_vector)</span><br><span class="line">    <span class="keyword">if</span> norm == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">continue</span>  <span class="comment"># 避免零向量</span></span><br><span class="line">    direction_vector = direction_vector / norm  <span class="comment"># 单位化方向向量</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 顺时针旋转90度得到垂直方向向量</span></span><br><span class="line">    perpendicular_vector = np.array([direction_vector[<span class="number">1</span>], -direction_vector[<span class="number">0</span>]])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算垂直线段的起点和终点</span></span><br><span class="line">    left_point = Point(</span><br><span class="line">        point.x - perpendicular_vector[<span class="number">0</span>] * vertical_line_length / <span class="number">2</span>,</span><br><span class="line">        point.y - perpendicular_vector[<span class="number">1</span>] * vertical_line_length / <span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">    right_point = Point(</span><br><span class="line">        point.x + perpendicular_vector[<span class="number">0</span>] * vertical_line_length / <span class="number">2</span>,</span><br><span class="line">        point.y + perpendicular_vector[<span class="number">1</span>] * vertical_line_length / <span class="number">2</span></span><br><span class="line">    )</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建垂直线段</span></span><br><span class="line">    vertical_lines.append(LineString([left_point, right_point]))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将垂直线段保存为 GeoDataFrame</span></span><br><span class="line">vertical_lines_gdf = gpd.GeoDataFrame(geometry=vertical_lines, crs=gdf.crs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">12</span>, <span class="number">12</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始线要素</span></span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, linewidth=<span class="number">2</span>, label=<span class="string">&#x27;Line Features&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制垂直线段</span></span><br><span class="line">vertical_lines_gdf.plot(ax=ax, color=<span class="string">&#x27;green&#x27;</span>, linewidth=<span class="number">1</span>, label=<span class="string">&#x27;Vertical Lines&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制交点</span></span><br><span class="line">intersection_gdf = gpd.GeoDataFrame(geometry=[Point(p.x, p.y) <span class="keyword">for</span> p <span class="keyword">in</span> sorted_nearest_points], crs=gdf.crs)</span><br><span class="line">intersection_gdf.plot(ax=ax, color=<span class="string">&#x27;red&#x27;</span>, label=<span class="string">&#x27;Intersections&#x27;</span>, zorder=<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为垂直线段添加方向箭头</span></span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> vertical_lines:</span><br><span class="line">    start = line.coords[<span class="number">0</span>]</span><br><span class="line">    end = line.coords[-<span class="number">1</span>]</span><br><span class="line">    ax.annotate(</span><br><span class="line">        <span class="string">&#x27;&#x27;</span>,  <span class="comment"># 空字符串</span></span><br><span class="line">        xy=(end[<span class="number">0</span>], end[<span class="number">1</span>]),  <span class="comment"># 箭头终点</span></span><br><span class="line">        xytext=(start[<span class="number">0</span>], start[<span class="number">1</span>]),  <span class="comment"># 箭头起点</span></span><br><span class="line">        arrowprops=<span class="built_in">dict</span>(arrowstyle=<span class="string">&quot;-&gt;&quot;</span>, color=<span class="string">&#x27;red&#x27;</span>, lw=<span class="number">1.5</span>)</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置图例和标题</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Vertical Lines with Adjusted Direction&quot;</span>)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>绘制箭头，查看结果是否错漏</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">12</span>, <span class="number">12</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始线要素</span></span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, linewidth=<span class="number">2</span>, label=<span class="string">&#x27;Line Features&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制垂直线段</span></span><br><span class="line">vertical_lines_gdf.plot(ax=ax, color=<span class="string">&#x27;green&#x27;</span>, linewidth=<span class="number">1</span>, label=<span class="string">&#x27;Vertical Lines&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为垂直线段添加方向箭头</span></span><br><span class="line"><span class="keyword">for</span> line <span class="keyword">in</span> vertical_lines_gdf.geometry:</span><br><span class="line">    <span class="comment"># 获取垂直线段的起点和终点</span></span><br><span class="line">    start = Point(line.coords[<span class="number">0</span>])</span><br><span class="line">    end = Point(line.coords[-<span class="number">1</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算箭头的位置</span></span><br><span class="line">    arrow_start_x = start.x + (end.x - start.x) * <span class="number">0.7</span>  <span class="comment"># 箭头起点靠近线的尾部</span></span><br><span class="line">    arrow_start_y = start.y + (end.y - start.y) * <span class="number">0.7</span></span><br><span class="line">    arrow_end_x = start.x + (end.x - start.x) * <span class="number">0.9</span>  <span class="comment"># 箭头终点更靠近线的尾部</span></span><br><span class="line">    arrow_end_y = start.y + (end.y - start.y) * <span class="number">0.9</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 绘制箭头</span></span><br><span class="line">    ax.annotate(</span><br><span class="line">        <span class="string">&#x27;&#x27;</span>,  <span class="comment"># 空字符串</span></span><br><span class="line">        xy=(arrow_end_x, arrow_end_y),  <span class="comment"># 箭头终点</span></span><br><span class="line">        xytext=(arrow_start_x, arrow_start_y),  <span class="comment"># 箭头起点</span></span><br><span class="line">        arrowprops=<span class="built_in">dict</span>(arrowstyle=<span class="string">&quot;-&gt;&quot;</span>, color=<span class="string">&#x27;red&#x27;</span>, lw=<span class="number">1.5</span>)</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置图例和标题</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Vertical Lines with Direction Arrows&quot;</span>)</span><br><span class="line"><span class="comment"># 保存为高分辨率图片</span></span><br><span class="line">current_width, current_height = fig.get_size_inches()  <span class="comment"># 获取当前大小</span></span><br><span class="line">fig.set_size_inches(current_width * <span class="number">3</span>, current_height * <span class="number">3</span>)  <span class="comment"># 设置新大小</span></span><br><span class="line"></span><br><span class="line">output_path = <span class="string">&quot;output_map.png&quot;</span>  <span class="comment"># 替换为实际保存路径</span></span><br><span class="line">plt.savefig(output_path, dpi=<span class="number">300</span>, bbox_inches=<span class="string">&#x27;tight&#x27;</span>)  <span class="comment"># dpi=300 高分辨率</span></span><br><span class="line"></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/arrow.png"></p>
+<p>更新垂直线</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> shapely.geometry <span class="keyword">import</span> LineString, Point</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个空列表，用于存储修改后的垂线段</span></span><br><span class="line">updated_vertical_lines = []</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i, (line, block_data) <span class="keyword">in</span> <span class="built_in">enumerate</span>(<span class="built_in">zip</span>(vertical_lines_gdf.geometry, all_blocks_data)):</span><br><span class="line">    <span class="comment"># 1. 获取当前垂直线段对应的表格数据</span></span><br><span class="line">    df = block_data  <span class="comment"># 当前表格数据</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 将第一列和第二列转换为数值类型</span></span><br><span class="line">    df.iloc[:, <span class="number">0</span>] = pd.to_numeric(df.iloc[:, <span class="number">0</span>], errors=<span class="string">&#x27;coerce&#x27;</span>)</span><br><span class="line">    df.iloc[:, <span class="number">1</span>] = pd.to_numeric(df.iloc[:, <span class="number">1</span>], errors=<span class="string">&#x27;coerce&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 2. 找到第二列的最小值及其对应的第一列的值</span></span><br><span class="line">    min_z_index = df.iloc[:, <span class="number">1</span>].idxmin()  <span class="comment"># 第二列最小值的索引</span></span><br><span class="line">    intersection_distance = df.iloc[min_z_index, <span class="number">0</span>]  <span class="comment"># 第一列对应的值为交点的投影距离</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 3. 计算左侧和右侧的长度</span></span><br><span class="line">    left_length = intersection_distance - df.iloc[:, <span class="number">0</span>].<span class="built_in">min</span>()  <span class="comment"># 左侧长度</span></span><br><span class="line">    right_length = df.iloc[:, <span class="number">0</span>].<span class="built_in">max</span>() - intersection_distance  <span class="comment"># 右侧长度</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 4. 获取原始垂直线的起点和终点</span></span><br><span class="line">    line_coords = <span class="built_in">list</span>(line.coords)</span><br><span class="line">    start_point = Point(line_coords[<span class="number">0</span>])</span><br><span class="line">    end_point = Point(line_coords[-<span class="number">1</span>])</span><br><span class="line">    <span class="comment"># print(start_point)</span></span><br><span class="line">    <span class="comment"># print(end_point)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算原始线段的单位方向向量 (单位化)</span></span><br><span class="line">    dx = end_point.x - start_point.x</span><br><span class="line">    dy = end_point.y - start_point.y</span><br><span class="line">    norm = (dx ** <span class="number">2</span> + dy ** <span class="number">2</span>) ** <span class="number">0.5</span></span><br><span class="line">    <span class="keyword">if</span> norm == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">continue</span>  <span class="comment"># 避免零向量问题</span></span><br><span class="line">    dx /= norm</span><br><span class="line">    dy /= norm</span><br><span class="line">    <span class="comment"># print(dx)</span></span><br><span class="line">    <span class="comment"># print(dy)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 获取原始线段的中点</span></span><br><span class="line">    midpoint = line.interpolate(<span class="number">0.5</span>, normalized=<span class="literal">True</span>)</span><br><span class="line">    <span class="comment"># print(midpoint)</span></span><br><span class="line">    <span class="comment"># 根据交点的投影距离生成新的垂直线段</span></span><br><span class="line">    left_start = Point(midpoint.x - dx * left_length, midpoint.y - dy * left_length)</span><br><span class="line">    right_end = Point(midpoint.x + dx * right_length, midpoint.y + dy * right_length)</span><br><span class="line">    <span class="comment"># print(left_start)</span></span><br><span class="line">    <span class="comment"># print(right_end)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建新的垂直线段</span></span><br><span class="line">    new_line = LineString([left_start, right_end])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 将修改后的垂线段加入列表</span></span><br><span class="line">    updated_vertical_lines.append(new_line)</span><br><span class="line"></span><br><span class="line"><span class="comment"># print(len(updated_vertical_lines))</span></span><br><span class="line"><span class="comment"># print(len(vertical_lines_gdf))</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查长度是否一致</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">len</span>(updated_vertical_lines) != <span class="built_in">len</span>(vertical_lines_gdf):</span><br><span class="line">    <span class="comment"># 删除多余的元素，确保长度匹配</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(updated_vertical_lines) &gt; <span class="built_in">len</span>(vertical_lines_gdf):</span><br><span class="line">        updated_vertical_lines = updated_vertical_lines[:<span class="built_in">len</span>(vertical_lines_gdf)]  <span class="comment"># 截取前 N 个</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        vertical_lines_gdf = vertical_lines_gdf.iloc[:<span class="built_in">len</span>(updated_vertical_lines)]  <span class="comment"># 截取前 N 行</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># # 6. 绘制结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, label=<span class="string">&#x27;Line&#x27;</span>)</span><br><span class="line">points_gdf.plot(ax=ax, color=<span class="string">&#x27;red&#x27;</span>, markersize=<span class="number">10</span>, label=<span class="string">&#x27;Original Points&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将更新后的垂直线段转为 GeoDataFrame 用于绘制</span></span><br><span class="line"><span class="keyword">from</span> geopandas <span class="keyword">import</span> GeoDataFrame</span><br><span class="line">updated_lines_gdf = GeoDataFrame(geometry=updated_vertical_lines, crs=vertical_lines_gdf.crs)</span><br><span class="line"></span><br><span class="line">updated_lines_gdf.plot(ax=ax, color=<span class="string">&#x27;green&#x27;</span>, label=<span class="string">&#x27;Updated Vertical Lines&#x27;</span>)  <span class="comment"># 绘制更新后的垂直线段</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Updated Vertical Lines with Original Line and Points&quot;</span>)</span><br><span class="line"></span><br><span class="line">plt.legend()</span><br><span class="line"><span class="comment"># 保存为高分辨率图片</span></span><br><span class="line">current_width, current_height = fig.get_size_inches()  <span class="comment"># 获取当前大小</span></span><br><span class="line">fig.set_size_inches(current_width * <span class="number">3</span>, current_height * <span class="number">3</span>)  <span class="comment"># 设置新大小</span></span><br><span class="line"></span><br><span class="line">output_path = <span class="string">&quot;output_map.png&quot;</span>  <span class="comment"># 替换为实际保存路径</span></span><br><span class="line">plt.savefig(output_path, dpi=<span class="number">300</span>, bbox_inches=<span class="string">&#x27;tight&#x27;</span>)  <span class="comment"># dpi=300 高分辨率</span></span><br><span class="line"></span><br><span class="line">plt.show()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/new_line.png"></p>
+<p>导出所有断面点XY以及对应Z值</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> shapely.geometry <span class="keyword">import</span> LineString, Point</span><br><span class="line"></span><br><span class="line"><span class="comment"># 存储结果的列表</span></span><br><span class="line">results = []</span><br><span class="line"></span><br><span class="line"><span class="comment"># 遍历每个垂线段及其对应的数据</span></span><br><span class="line"><span class="keyword">for</span> line, block_data <span class="keyword">in</span> <span class="built_in">zip</span>(updated_lines_gdf.geometry, all_blocks_data):</span><br><span class="line">    <span class="comment"># 提取垂线段的起点和终点</span></span><br><span class="line">    start, end = line.coords[<span class="number">0</span>], line.coords[<span class="number">1</span>]</span><br><span class="line">    start_point = Point(start)</span><br><span class="line">    end_point = Point(end)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算垂线段的方向向量</span></span><br><span class="line">    direction_vector = [end_point.x - start_point.x, end_point.y - start_point.y]</span><br><span class="line">    norm = (direction_vector[<span class="number">0</span>]**<span class="number">2</span> + direction_vector[<span class="number">1</span>]**<span class="number">2</span>)**<span class="number">0.5</span></span><br><span class="line">    direction_vector = [direction_vector[<span class="number">0</span>] / norm, direction_vector[<span class="number">1</span>] / norm]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 遍历 block_data 中的每个距离点（第一列）及其对应数值（第二列）</span></span><br><span class="line">    <span class="keyword">for</span> _, row <span class="keyword">in</span> block_data.iterrows():</span><br><span class="line">        distance = row.iloc[<span class="number">0</span>]  <span class="comment"># 第一列：距离</span></span><br><span class="line">        value = row.iloc[<span class="number">1</span>]     <span class="comment"># 第二列：数值</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 计算标记点的坐标</span></span><br><span class="line">        mark_x = start_point.x + direction_vector[<span class="number">0</span>] * distance</span><br><span class="line">        mark_y = start_point.y + direction_vector[<span class="number">1</span>] * distance</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 保存点的信息</span></span><br><span class="line">        results.append([mark_x, mark_y, value])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将结果转换为 DataFrame</span></span><br><span class="line">results_df = pd.DataFrame(results, columns=[<span class="string">&quot;X&quot;</span>, <span class="string">&quot;Y&quot;</span>, <span class="string">&quot;Value&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出到文件或其他格式</span></span><br><span class="line">results_df.to_csv(<span class="string">&quot;vertical_line_marked_points.csv&quot;</span>, index=<span class="literal">False</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>绘制断面点，查看结果是否错漏</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 可视化结果</span></span><br><span class="line">fig, ax = plt.subplots(figsize=(<span class="number">12</span>, <span class="number">12</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制原始线要素</span></span><br><span class="line">gdf.plot(ax=ax, color=<span class="string">&#x27;blue&#x27;</span>, linewidth=<span class="number">2</span>, label=<span class="string">&#x27;Line Features&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制垂直线段</span></span><br><span class="line">updated_lines_gdf.plot(ax=ax, color=<span class="string">&#x27;green&#x27;</span>, label=<span class="string">&#x27;Updated Vertical Lines&#x27;</span>)  <span class="comment"># 绘制更新后的垂直线段</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制标记点</span></span><br><span class="line"><span class="keyword">for</span> result <span class="keyword">in</span> results:</span><br><span class="line">    ax.scatter(result[<span class="number">0</span>], result[<span class="number">1</span>], color=<span class="string">&#x27;red&#x27;</span>, s=<span class="number">10</span>, label=<span class="string">&#x27;Marked Points&#x27;</span> <span class="keyword">if</span> <span class="string">&#x27;Marked Points&#x27;</span> <span class="keyword">not</span> <span class="keyword">in</span> ax.get_legend_handles_labels()[<span class="number">1</span>] <span class="keyword">else</span> <span class="string">&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置图例和标题</span></span><br><span class="line">plt.legend()</span><br><span class="line">plt.title(<span class="string">&quot;Marked Points on Vertical Lines&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X (Projection Coordinate)&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y (Projection Coordinate)&quot;</span>)</span><br><span class="line"><span class="comment"># 保存为高分辨率图片</span></span><br><span class="line">current_width, current_height = fig.get_size_inches()  <span class="comment"># 获取当前大小</span></span><br><span class="line">fig.set_size_inches(current_width * <span class="number">10</span>, current_height * <span class="number">10</span>)  <span class="comment"># 设置新大小</span></span><br><span class="line"></span><br><span class="line">output_path = <span class="string">&quot;output_map.png&quot;</span>  <span class="comment"># 替换为实际保存路径</span></span><br><span class="line">plt.savefig(output_path, dpi=<span class="number">300</span>, bbox_inches=<span class="string">&#x27;tight&#x27;</span>)  <span class="comment"># dpi=300 高分辨率</span></span><br><span class="line"></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/MIKE-11%E5%9C%B0%E5%BD%A2%E6%95%B0%E6%8D%AE%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%8E%9F%E5%A7%8B%E6%96%87%E4%BB%B6-by-jupyter/output_map.png"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%99%E7%A8%8B/" rel="tag"># 教程</a>
+              <a href="/tags/%E6%9C%BA%E7%90%86%E6%A8%A1%E5%9E%8B/" rel="tag"># 机理模型</a>
+              <a href="/tags/MIKE/" rel="tag"># MIKE</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/" rel="tag"># 数据处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/12/25/EFDC%E7%BD%91%E6%A0%BC%E7%BB%98%E5%88%B6(ing)/" rel="prev" title="EFDC网格绘制">
+      <i class="fa fa-chevron-left"></i> EFDC网格绘制
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shp%E4%B8%8E%E5%9C%B0%E5%BD%A2txt%E6%96%87%E4%BB%B6%E8%BE%93%E5%87%BA"><span class="nav-number">2.</span> <span class="nav-text">shp与地形txt文件输出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%8F%90%E5%8F%96%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">数据提取与预处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%AD%E9%9D%A2%E7%82%B9txt%E6%95%B0%E6%8D%AE%E6%8F%90%E5%8F%96%E4%B8%8E%E5%9E%82%E7%BA%BF%E6%9B%B4%E6%96%B0"><span class="nav-number">4.</span> <span class="nav-text">断面点txt数据提取与垂线更新</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Link_yq"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Link_yq</p>
+  <div class="site-description" itemprop="description">SCUT在读研究生</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">31</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Github-LinYQ" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Github-LinYQ" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1282682544@qq.com" title="E-Mail → mailto:1282682544@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/1282682544" title="QQ → 1282682544"><i class="QQ fa-fw"></i>QQ</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Link_yq</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '61WiFORKiZi9piuyEvbaXK3e-gzGzoHsz',
+      appKey     : 'uI41C1DmOvZt1NzW7RN2Mi9L',
+      placeholder: "Write a comment...(支持markdown)",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
