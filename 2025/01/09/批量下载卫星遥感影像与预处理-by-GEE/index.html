@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"enable":true,"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="采用Google Earth Engine下载sentinal-2的L2A(地表反射率)产品，并批量区域与根据点shp提取波段值">
+<meta property="og:type" content="article">
+<meta property="og:title" content="批量下载卫星遥感影像与预处理(by GEE)">
+<meta property="og:url" content="http://example.com/2025/01/09/%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F%E5%BD%B1%E5%83%8F%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86-by-GEE/index.html">
+<meta property="og:site_name" content="英招">
+<meta property="og:description" content="采用Google Earth Engine下载sentinal-2的L2A(地表反射率)产品，并批量区域与根据点shp提取波段值">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-09T06:50:07.000Z">
+<meta property="article:modified_time" content="2025-01-09T08:59:32.708Z">
+<meta property="article:author" content="Link_yq">
+<meta property="article:tag" content="数据处理">
+<meta property="article:tag" content="多光谱">
+<meta property="article:tag" content="卫星遥感">
+<meta property="article:tag" content="GEE">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2025/01/09/%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F%E5%BD%B1%E5%83%8F%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86-by-GEE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>批量下载卫星遥感影像与预处理(by GEE) | 英招</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">英招</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">牢骚太盛防肠断，风物长宜放眼量</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/01/09/%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F%E5%BD%B1%E5%83%8F%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86-by-GEE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Link_yq">
+      <meta itemprop="description" content="SCUT在读研究生">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="英招">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          批量下载卫星遥感影像与预处理(by GEE)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2025-01-09 14:50:07 / 修改时间：16:59:32" itemprop="dateCreated datePublished" datetime="2025-01-09T14:50:07+08:00">2025-01-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/GEE/" itemprop="url" rel="index"><span itemprop="name">GEE</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2025/01/09/%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F%E5%BD%B1%E5%83%8F%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86-by-GEE/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2025/01/09/%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F%E5%BD%B1%E5%83%8F%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86-by-GEE/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+            <div class="post-description"><center>采用Google Earth Engine下载sentinal-2的L2A(地表反射率)产品，并批量区域与根据点shp提取波段值</center></div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Google Earth Engine网址： <a target="_blank" rel="noopener" href="https://code.earthengine.google.com/">https://code.earthengine.google.com/</a> </p>
+<p>左侧窗口：</p>
+<p>scripts:脚本界面，存储不同的任务代码</p>
+<p>Docs:文档界面，查看函数帮助</p>
+<p>Assets:数据界面，导入本地数据，shp文件推荐压缩成zip导入</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 导入广东省水质站点并显示</span></span><br><span class="line"><span class="keyword">var</span> points = ee.<span class="title class_">FeatureCollection</span>(<span class="string">&quot;projects/gee-lyq/assets/guangdong_WQ_point_WGS84&quot;</span>);</span><br><span class="line"><span class="title class_">Map</span>.<span class="title function_">addLayer</span>(points, &#123;&#125;, <span class="string">&quot;Shapefile&quot;</span>);</span><br><span class="line"><span class="title class_">Map</span>.<span class="title function_">centerObject</span>(points);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义时间范围</span></span><br><span class="line"><span class="keyword">var</span> startDate = <span class="string">&#x27;2020-01-01&#x27;</span>;</span><br><span class="line"><span class="keyword">var</span> endDate = <span class="string">&#x27;2023-07-01&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 加载 Sentinel-2 L2A 数据集</span></span><br><span class="line"><span class="keyword">var</span> s2 = ee.<span class="title class_">ImageCollection</span>(<span class="string">&#x27;COPERNICUS/S2_SR&#x27;</span>)</span><br><span class="line">  .<span class="title function_">filterDate</span>(startDate, endDate)</span><br><span class="line">  .<span class="title function_">filterBounds</span>(points)</span><br><span class="line">  .<span class="title function_">filter</span>(ee.<span class="property">Filter</span>.<span class="title function_">lt</span>(<span class="string">&#x27;CLOUDY_PIXEL_PERCENTAGE&#x27;</span>, <span class="number">10</span>)); <span class="comment">// 过滤云量小于10%的影像</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 去云处理函数</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">maskClouds</span>(<span class="params">image</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> qa = image.<span class="title function_">select</span>(<span class="string">&#x27;QA60&#x27;</span>); <span class="comment">// 云掩码波段</span></span><br><span class="line">  <span class="keyword">var</span> cloudBitMask = <span class="number">1</span> &lt;&lt; <span class="number">10</span>; <span class="comment">// 10位表示云</span></span><br><span class="line">  <span class="keyword">var</span> cirrusBitMask = <span class="number">1</span> &lt;&lt; <span class="number">11</span>; <span class="comment">// 11位表示卷云</span></span><br><span class="line">  <span class="keyword">var</span> mask = qa.<span class="title function_">bitwiseAnd</span>(cloudBitMask).<span class="title function_">eq</span>(<span class="number">0</span>).<span class="title function_">and</span>(qa.<span class="title function_">bitwiseAnd</span>(cirrusBitMask).<span class="title function_">eq</span>(<span class="number">0</span>));</span><br><span class="line">  <span class="keyword">return</span> image.<span class="title function_">updateMask</span>(mask);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 应用去云</span></span><br><span class="line"><span class="keyword">var</span> s2Masked = s2.<span class="title function_">map</span>(maskClouds);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取所有波段</span></span><br><span class="line"><span class="keyword">var</span> allBands = ee.<span class="title class_">Image</span>(s2Masked.<span class="title function_">first</span>()).<span class="title function_">bandNames</span>(); <span class="comment">// 获取所有波段名</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 提取点波段值及影像时间</span></span><br><span class="line"><span class="keyword">var</span> results = s2Masked.<span class="title function_">map</span>(<span class="keyword">function</span>(<span class="params">image</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> date = image.<span class="title function_">date</span>().<span class="title function_">format</span>(<span class="string">&#x27;YYYY-MM-dd HH:mm:ss&#x27;</span>); <span class="comment">// 获取影像日期</span></span><br><span class="line">  <span class="keyword">var</span> values = image.<span class="title function_">select</span>(allBands).<span class="title function_">sampleRegions</span>(&#123;</span><br><span class="line">    <span class="attr">collection</span>: points,</span><br><span class="line">    <span class="attr">scale</span>: <span class="number">10</span>, <span class="comment">// 波段分辨率</span></span><br><span class="line">    <span class="attr">geometries</span>: <span class="literal">true</span> <span class="comment">// 保留点的几何信息</span></span><br><span class="line">  &#125;).<span class="title function_">map</span>(<span class="keyword">function</span>(<span class="params">feature</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> feature.<span class="title function_">set</span>(<span class="string">&#x27;date&#x27;</span>, date); <span class="comment">// 添加影像日期信息</span></span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">return</span> values;</span><br><span class="line">&#125;).<span class="title function_">flatten</span>(); <span class="comment">// 合并所有影像的提取结果</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 打印结果到控制台</span></span><br><span class="line"><span class="title function_">print</span>(<span class="string">&#x27;Extracted values:&#x27;</span>, results);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 导出结果为 CSV</span></span><br><span class="line"><span class="title class_">Export</span>.<span class="property">table</span>.<span class="title function_">toDrive</span>(&#123;</span><br><span class="line">  <span class="attr">collection</span>: results,</span><br><span class="line">  <span class="attr">description</span>: <span class="string">&#x27;Sentinel2_AllBands_Extraction&#x27;</span>,</span><br><span class="line">  <span class="attr">fileFormat</span>: <span class="string">&#x27;CSV&#x27;</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="备注"><a href="#备注" class="headerlink" title="备注"></a>备注</h2><p>输出的任务数据在右侧窗口Tasks界面中，可导出至Google Drive后下载至本地</p>
+<p>数据释义：</p>
+<p>system:index：影像名称，如20200105T030119_20200105T030910_T49QHF_00000000000000000029_0</p>
+<p>20200105T030119表示影像开始采集的时间</p>
+<p>20200105T030910表示影像结束采集的时间</p>
+<p>T49QHF表示影像所在的网格编号</p>
+<p>00000000000000000029表示产品产品唯一标识，用于标识产品版本或处理历史的编号</p>
+<p>_0表示数据版本号，0 表示初始版本（通常指第一次生成的产品），如果有后续更新或重新处理，版本号会递增</p>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>名称</strong></th>
+<th align="center"><strong>波段中心波长（nm）</strong></th>
+<th align="center"><strong>分辨率（m）</strong></th>
+<th align="center"><strong>用途描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>B1</strong></td>
+<td align="center">443</td>
+<td align="center">60</td>
+<td align="center">浅蓝带，大气校正和水体研究。</td>
+</tr>
+<tr>
+<td align="center"><strong>B2</strong></td>
+<td align="center">490</td>
+<td align="center">10</td>
+<td align="center">蓝带，可见光部分，用于水体和植被监测。</td>
+</tr>
+<tr>
+<td align="center"><strong>B3</strong></td>
+<td align="center">560</td>
+<td align="center">10</td>
+<td align="center">绿带，用于植被健康分析。</td>
+</tr>
+<tr>
+<td align="center"><strong>B4</strong></td>
+<td align="center">665</td>
+<td align="center">10</td>
+<td align="center">红带，用于植被分析（如 NDVI）。</td>
+</tr>
+<tr>
+<td align="center"><strong>B5</strong></td>
+<td align="center">705</td>
+<td align="center">20</td>
+<td align="center">红边带，用于植被分析，敏感于叶绿素含量。</td>
+</tr>
+<tr>
+<td align="center"><strong>B6</strong></td>
+<td align="center">740</td>
+<td align="center">20</td>
+<td align="center">红边带，用于植被覆盖研究。</td>
+</tr>
+<tr>
+<td align="center"><strong>B7</strong></td>
+<td align="center">783</td>
+<td align="center">20</td>
+<td align="center">红边带，用于植被状态监测。</td>
+</tr>
+<tr>
+<td align="center"><strong>B8</strong></td>
+<td align="center">842</td>
+<td align="center">10</td>
+<td align="center">近红外（NIR）带，用于生物量监测。</td>
+</tr>
+<tr>
+<td align="center"><strong>B8A</strong></td>
+<td align="center">865</td>
+<td align="center">20</td>
+<td align="center">窄 NIR 红边带，用于植被特性分析。</td>
+</tr>
+<tr>
+<td align="center"><strong>B9</strong></td>
+<td align="center">945</td>
+<td align="center">60</td>
+<td align="center">水汽吸收带，用于大气校正。</td>
+</tr>
+<tr>
+<td align="center"><strong>B11</strong></td>
+<td align="center">1610</td>
+<td align="center">20</td>
+<td align="center">短波红外（SWIR）1，用于云检测和土壤分析。</td>
+</tr>
+<tr>
+<td align="center"><strong>B12</strong></td>
+<td align="center">2190</td>
+<td align="center">20</td>
+<td align="center">短波红外（SWIR）2，用于植被分析和地表分类。</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center"><strong>名称</strong></th>
+<th align="center"><strong>含义</strong></th>
+<th align="center"><strong>描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>AOT</strong></td>
+<td align="center">气溶胶光学厚度（Aerosol Optical Thickness）</td>
+<td align="center">表示大气中悬浮微粒对光的散射程度。用于大气校正。</td>
+</tr>
+<tr>
+<td align="center"><strong>MSK_CLDPRB</strong></td>
+<td align="center">云概率掩膜（Cloud Probability Mask）</td>
+<td align="center">每个像素的云覆盖概率（0-100）。</td>
+</tr>
+<tr>
+<td align="center"><strong>MSK_SNWPRB</strong></td>
+<td align="center">雪概率掩膜（Snow Probability Mask）</td>
+<td align="center">每个像素的雪覆盖概率（0-100）。</td>
+</tr>
+<tr>
+<td align="center"><strong>QA10, QA20,QA60</strong></td>
+<td align="center">质量评估（Quality Assessment Bands）</td>
+<td align="center">不同分辨率下的质量掩膜（例如云、阴影）。</td>
+</tr>
+<tr>
+<td align="center"><strong>SCL</strong></td>
+<td align="center">场景分类图层（Scene Classification Layer）</td>
+<td align="center">每个像素的分类（云、雪、水体、植被等）。</td>
+</tr>
+<tr>
+<td align="center"><strong>TCI_B,TCI_G,TCI_R</strong></td>
+<td align="center">真彩色波段（True Color Image Bands）</td>
+<td align="center">蓝（B）绿（G）红（R）波段，用于生成真彩色图像。</td>
+</tr>
+<tr>
+<td align="center"><strong>WVP</strong></td>
+<td align="center">水汽含量（Water Vapor Band）</td>
+<td align="center">水汽柱总量（以 cm 为单位），用于大气校正。</td>
+</tr>
+</tbody></table>
+<p>其中<strong>SCL</strong>数据分类为：</p>
+<ul>
+<li>1：不确定（No Data）</li>
+<li>2：暗特征或阴影（Dark Features or Shadows）</li>
+<li>3：云阴影（Cloud Shadows）</li>
+<li>4：植被（Vegetation）</li>
+<li>5：裸地（土地）（Bare Soils）</li>
+<li>6：水体（Water）</li>
+<li>7：积雪（Snow）</li>
+<li>8：云（Clouds）</li>
+<li>9：稀疏云（Thin Cirrus）</li>
+<li>10：中间浓度云（Medium Probability Clouds）</li>
+<li>11：高浓度云（High Probability Clouds）</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/" rel="tag"># 数据处理</a>
+              <a href="/tags/%E5%A4%9A%E5%85%89%E8%B0%B1/" rel="tag"># 多光谱</a>
+              <a href="/tags/%E5%8D%AB%E6%98%9F%E9%81%A5%E6%84%9F/" rel="tag"># 卫星遥感</a>
+              <a href="/tags/GEE/" rel="tag"># GEE</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/01/09/LSTM%E6%95%8F%E6%84%9F%E6%80%A7%E5%88%86%E6%9E%90%E4%BB%A3%E7%A0%81%E8%AF%A6%E8%A7%A3-by-jupyter/" rel="prev" title="LSTM敏感性分析代码详解(by jupyter)">
+      <i class="fa fa-chevron-left"></i> LSTM敏感性分析代码详解(by jupyter)
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%87%E6%B3%A8"><span class="nav-number">3.</span> <span class="nav-text">备注</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Link_yq"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Link_yq</p>
+  <div class="site-description" itemprop="description">SCUT在读研究生</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Github-LinYQ" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Github-LinYQ" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1282682544@qq.com" title="E-Mail → mailto:1282682544@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/1282682544" title="QQ → 1282682544"><i class="QQ fa-fw"></i>QQ</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Link_yq</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '61WiFORKiZi9piuyEvbaXK3e-gzGzoHsz',
+      appKey     : 'uI41C1DmOvZt1NzW7RN2Mi9L',
+      placeholder: "Write a comment...(支持markdown)",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
